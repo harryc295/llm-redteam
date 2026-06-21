@@ -11,11 +11,13 @@ class AnthropicProvider:
             import anthropic
         except ImportError as e:
             raise SystemExit("Anthropic provider needs the SDK: pip install anthropic") from e
-        self._anthropic = anthropic
         self._client = anthropic.Anthropic(base_url=base_url) if base_url else anthropic.Anthropic()
         self._model = model
 
     def send(self, system: str, user: str) -> str:
+        # ponytail: broad catch is deliberate -- auth/config errors (missing key)
+        # raise plain TypeError from the SDK, not an APIError subclass, and this
+        # function's contract is "always return a status string, never crash a run".
         try:
             resp = self._client.messages.create(
                 model=self._model,
@@ -23,8 +25,8 @@ class AnthropicProvider:
                 system=system,
                 messages=[{"role": "user", "content": user}],
             )
-        except self._anthropic.APIStatusError as e:
-            return f"[error] {e.status_code}: {e.message}"
+        except Exception as e:
+            return f"[error] {e}"
         if resp.stop_reason == "refusal":
             return "[refusal]"
         return "".join(b.text for b in resp.content if b.type == "text")
@@ -38,7 +40,6 @@ class OpenAIProvider:
             import openai
         except ImportError as e:
             raise SystemExit("OpenAI provider needs the SDK: pip install openai") from e
-        self._openai = openai
         self._client = openai.OpenAI(base_url=base_url) if base_url else openai.OpenAI()
         self._model = model
 
@@ -49,8 +50,8 @@ class OpenAIProvider:
                 max_tokens=1024,
                 messages=[{"role": "system", "content": system}, {"role": "user", "content": user}],
             )
-        except self._openai.APIStatusError as e:
-            return f"[error] {e.status_code}: {e.message}"
+        except Exception as e:
+            return f"[error] {e}"
         return resp.choices[0].message.content or "[empty]"
 
 
