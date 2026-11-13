@@ -1,9 +1,9 @@
 # llm-redteam
 
-A small red-team CLI for LLM-backed apps. It fires a battery of prompt-injection,
-jailbreak, and system-prompt-leak attacks at a model and scores how many got
-through, using a canary-token technique to detect exfiltration with no
-guesswork about what counts as "leaked."
+A red-team CLI for teams shipping LLM-backed apps. It fires prompt-injection,
+jailbreak and system-prompt-leak attacks at a model and scores how many got
+through. A canary token catches exfiltration, so you don't have to guess what
+counts as "leaked".
 
 Works against Claude (official `anthropic` SDK) or any OpenAI-compatible
 endpoint (official `openai` SDK, including local servers like Ollama/vLLM via
